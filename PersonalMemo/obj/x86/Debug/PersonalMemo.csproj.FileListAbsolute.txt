@@ -1,0 +1,1 @@
+E:\work\dotnet\demos\PersonalMemo\PersonalMemo\bin\Debug\我的备忘录.exe.config
