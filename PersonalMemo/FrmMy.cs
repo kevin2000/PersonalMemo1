@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using PersonalMemo.context;
 using PersonalMemo.dal;
 using PersonalMemo.model;
+using PersonalMemo.common;
 
 namespace PersonalMemo
 {
@@ -24,16 +25,19 @@ namespace PersonalMemo
             if (!string.IsNullOrWhiteSpace(txtOldPwd.Text) && !string.IsNullOrWhiteSpace(txtNewPwd.Text) 
                 && txtNewPwd.Text.Trim().Equals(txtNewPwdConfirm.Text.Trim()))
             {
-                if (Session.currUser.password.Equals(txtOldPwd.Text.Trim()))
-                { 
-                    Session.currUser.password = txtNewPwd.Text.Trim();
+                string oldPwd = txtOldPwd.Text.Trim();
+                if(Session.EncryptMode)
+                    oldPwd=EncryptUtil.EncryptMd5Salt(txtOldPwd.Text.Trim(), txtOldPwd.Text.Trim());
+                if (Session.currUser.password.Equals(oldPwd))
+                {
+                    Session.currUser.password = EncryptUtil.EncryptMd5Salt(txtNewPwd.Text.Trim(), txtNewPwd.Text.Trim());
                     if (UserDal.Modify(Session.currUser))
                     {
                         if (MessageBox.Show("保存成功，是否退出?", "提示", MessageBoxButtons.YesNo) == DialogResult.Yes)
                             this.Close();
                     }
                     else {
-                        Session.currUser.password = txtOldPwd.Text.Trim();      
+                        Session.currUser.password = oldPwd ;      
                         ShowHint("保存失败");
                     }
                 }

@@ -2,23 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PersonalMemo.model;
+using Dapper;
 /* ==============================================================================
- * 功能描述：Class1  
+ * 功能描述：SysConfig  
   * 创 建 者：liqiao
-  * 创建日期：2017/5/19 14:40:20
+  * 创建日期：2017/5/22 11:43:46
   * email:120911940@qq.com
   * ==============================================================================*/
-namespace PersonalMemo.context
+namespace PersonalMemo.model
 {
     /// <summary>
-    /// 会话信息，相当于web中的session
+    /// 系统配置
     /// </summary>
-    public class Session
+    [Table("sys_config")]
+    public class SysConfig
     {
-        //当前登录用户
-        public static SysUser currUser;
-        public static bool EncryptMode=false;
-
+        [Key]
+        [Required]
+        public string id { get; set; }
+        public string name{ get; set; }
+        public string convalue { get; set; }
     }
 }

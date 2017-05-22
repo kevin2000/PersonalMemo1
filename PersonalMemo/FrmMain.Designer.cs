@@ -33,7 +33,6 @@
             this.toolStripMain = new System.Windows.Forms.ToolStrip();
             this.tsbtnNew = new System.Windows.Forms.ToolStripButton();
             this.tsbtnFind = new System.Windows.Forms.ToolStripButton();
-            this.tsbtnSave = new System.Windows.Forms.ToolStripButton();
             this.tsdropBtnTags = new System.Windows.Forms.ToolStripDropDownButton();
             this.tsMenuItemTag = new System.Windows.Forms.ToolStripMenuItem();
             this.tsbtnMy = new System.Windows.Forms.ToolStripButton();
@@ -43,6 +42,7 @@
             this.tsMenuItemTagEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMenuItemTadRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.lblWelcome = new System.Windows.Forms.Label();
+            this.timerAutoSaveMemo = new System.Windows.Forms.Timer(this.components);
             this.toolStripMain.SuspendLayout();
             this.cmStripTag.SuspendLayout();
             this.SuspendLayout();
@@ -52,7 +52,6 @@
             this.toolStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsbtnNew,
             this.tsbtnFind,
-            this.tsbtnSave,
             this.tsdropBtnTags,
             this.tsbtnMy,
             this.tsbtnAboud});
@@ -81,16 +80,6 @@
             this.tsbtnFind.Size = new System.Drawing.Size(50, 28);
             this.tsbtnFind.Text = "查找";
             this.tsbtnFind.Click += new System.EventHandler(this.tsbtnFind_Click);
-            // 
-            // tsbtnSave
-            // 
-            this.tsbtnSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.tsbtnSave.Image = ((System.Drawing.Image)(resources.GetObject("tsbtnSave.Image")));
-            this.tsbtnSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbtnSave.Name = "tsbtnSave";
-            this.tsbtnSave.Size = new System.Drawing.Size(50, 28);
-            this.tsbtnSave.Text = "保存";
-            this.tsbtnSave.Click += new System.EventHandler(this.tsbtnSave_Click);
             // 
             // tsdropBtnTags
             // 
@@ -176,6 +165,12 @@
             this.lblWelcome.Text = "欢迎使用我的备忘录";
             this.lblWelcome.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // timerAutoSaveMemo
+            // 
+            this.timerAutoSaveMemo.Enabled = true;
+            this.timerAutoSaveMemo.Interval = 60000;
+            this.timerAutoSaveMemo.Tick += new System.EventHandler(this.timerAutoSaveMemo_Tick);
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -188,6 +183,7 @@
             this.Name = "FrmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "备忘录";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
             this.Load += new System.EventHandler(this.frmMain_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FrmMain_KeyDown);
             this.toolStripMain.ResumeLayout(false);
@@ -203,7 +199,6 @@
         private System.Windows.Forms.ToolStrip toolStripMain;
         private System.Windows.Forms.ToolStripButton tsbtnNew;
         private System.Windows.Forms.ToolStripButton tsbtnFind;
-        private System.Windows.Forms.ToolStripButton tsbtnSave;
         private System.Windows.Forms.TabControl tabControlMain;
         private System.Windows.Forms.ToolStripDropDownButton tsdropBtnTags;
         private System.Windows.Forms.ToolStripMenuItem tsMenuItemTag;
@@ -213,6 +208,7 @@
         private System.Windows.Forms.ToolStripButton tsbtnMy;
         private System.Windows.Forms.ToolStripButton tsbtnAboud;
         private System.Windows.Forms.Label lblWelcome;
+        private System.Windows.Forms.Timer timerAutoSaveMemo;
 
     }
 }

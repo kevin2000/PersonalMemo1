@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
+using PersonalMemo.dal;
+using PersonalMemo.model;
+using PersonalMemo.context;
 /* ==============================================================================
  * 功能描述：加密解密工具  
   * 创 建 者：liqiao
@@ -18,6 +21,14 @@ namespace PersonalMemo.common
         private static byte[] byKey = System.Text.ASCIIEncoding.ASCII.GetBytes("12345678");//必须是8个字符，64bit
         private static byte[] byIV = System.Text.ASCIIEncoding.ASCII.GetBytes("hgfedcba");//必须是8个字符，64bit
         /// <summary>
+        /// 初始化加密所用的key
+        /// </summary>
+        /// <param name="keys"></param>
+        public static void Init() {
+            
+            
+        }
+        /// <summary>
         /// md5加密
         /// </summary>
         /// <param name="text"></param>
@@ -25,9 +36,10 @@ namespace PersonalMemo.common
         public static string EncryptMd5(string text)
         {
             MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] palindata = Encoding.Default.GetBytes(text);//将要加密的字符串转换为字节数组
+            byte[] palindata = Encoding.UTF8.GetBytes(text);//将要加密的字符串转换为字节数组
             byte[] encryptdata = md5.ComputeHash(palindata);//将字符串加密后也转换为字符数组
-            return Convert.ToBase64String(encryptdata);//将加密后的字节数组转换为加密字符串
+            return BitConverter.ToString(encryptdata).Replace("-", "");
+            //return Convert.ToBase64String(encryptdata);//将加密后的字节数组转换为加密字符串
         }
         /// <summary>
         /// md5盐值加密
@@ -35,9 +47,10 @@ namespace PersonalMemo.common
         /// <param name="text">字符串</param>
         /// <param name="salt">盐</param>
         /// <returns></returns>
-        public static string EncryptMd5Salt(string text, string salt)
-        {
-            return EncryptMd5(text);
+        public static string EncryptMd5Salt(string source, string salt)
+        { 
+            
+            return EncryptMd5(source);
         }
         /// <summary>
         /// des加密
@@ -46,6 +59,8 @@ namespace PersonalMemo.common
         /// <returns></returns>
         public static string EncryptDes(string plainText)
         {
+            if (string.IsNullOrWhiteSpace(plainText))
+                return plainText;
             DESCryptoServiceProvider cryptoProvider = new DESCryptoServiceProvider();
             int i = cryptoProvider.KeySize;
             MemoryStream ms = new MemoryStream();
@@ -65,6 +80,8 @@ namespace PersonalMemo.common
         /// <returns></returns>
         public static string DecryptDes(string cypherText)
         {
+            if (string.IsNullOrWhiteSpace(cypherText))
+                return cypherText;
             byte[] byEnc;
             try
             {
@@ -151,7 +168,7 @@ namespace PersonalMemo.common
         /// </summary>
         /// <param name="strInput"></param>
         /// <returns></returns>
-        public static string EncryptOffset(string strInput)
+        public static string EncryptOffset(string strInput,int offset)
         {
             string strFont, strEnd;
             string strOutput;
@@ -169,7 +186,7 @@ namespace PersonalMemo.common
             charFont = strFont.ToCharArray();
             for (i = 0; i < strFont.Length; i++)
             {
-                intFont = (int)charFont[i] + 3;
+                intFont = (int)charFont[i] + offset;
                 //Console.WriteLine(" intFont is : {0} /n", intFont);                                 
 
                 charFont[i] = Convert.ToChar(intFont);
@@ -181,7 +198,7 @@ namespace PersonalMemo.common
                 strFont += charFont[i];
             }
             strOutput = strEnd + strFont;
-            return strOutput; 
+            return strOutput;
         }
         /// <summary>
         /// 加密后的字符串的第一个字符是原先字符串的最后一个字符，
@@ -190,7 +207,7 @@ namespace PersonalMemo.common
         /// </summary>
         /// <param name="strInput"></param>
         /// <returns></returns>
-        public static string DecryptOffset(string strInput)
+        public static string DecryptOffset(string strInput,int offset)
         {
             string strFont, strEnd;
             string strOutput;
@@ -200,7 +217,7 @@ namespace PersonalMemo.common
             len = strInput.Length;
             //Console.WriteLine(" strInput 's length is :{0} /n", len);
             strFont = strInput.Substring(1);
-            strEnd = strInput.Substring(0,1);
+            strEnd = strInput.Substring(0, 1);
 
             //Console.WriteLine(" strFont is : {0} /n" , strFont);                                 
             //Console.WriteLine(" strEnd is : {0} /n" , strEnd);                                 
@@ -208,7 +225,7 @@ namespace PersonalMemo.common
             charFont = strFont.ToCharArray();
             for (i = 0; i < strFont.Length; i++)
             {
-                intFont = (int)charFont[i] - 3;
+                intFont = (int)charFont[i] - offset;
                 //Console.WriteLine(" intFont is : {0} /n", intFont);                                 
 
                 charFont[i] = Convert.ToChar(intFont);
@@ -219,7 +236,7 @@ namespace PersonalMemo.common
             {
                 strFont += charFont[i];
             }
-            strOutput = strFont+strEnd;
+            strOutput = strFont + strEnd;
             return strOutput;
         }
         /// <summary>
@@ -234,10 +251,10 @@ namespace PersonalMemo.common
                 return 0;
             else
             {
-                string result=""; 
+                string result = "";
                 for (int i = 0; i < InValue.Length; i++)
-                { 
-                    result += CheckString.IndexOf(InValue[i]).ToString(); 
+                {
+                    result += CheckString.IndexOf(InValue[i]).ToString();
                 }
 
                 try
@@ -253,11 +270,11 @@ namespace PersonalMemo.common
         /// <returns></returns>
         private static string GetRandomStr()
         {
-            String myKey = "abcdefghijklmnopqrstuvwxyz"; 
+            String myKey = "abcdefghijklmnopqrstuvwxyz";
             String result = "";
             Random random = new Random();
             for (int i = 0; i < 10; i++)
-            { 
+            {
                 int position = random.Next(myKey.Length);
                 result = result + myKey[position];
 
@@ -271,14 +288,14 @@ namespace PersonalMemo.common
         /// <param name="text">string格式的数字，例如 "123.123"</param>
         /// <param name="checkKey">加密的key</param>
         /// <returns></returns>
-        public static string EncryptInt2Str(string text,out string checkKey) 
+        public static string EncryptInt2Str(string text, out string checkKey)
         {
-            checkKey = GetRandomStr(); 
+            checkKey = GetRandomStr();
             string result = "";
             int index = 0;
             for (int i = 0; i < text.Length; i++)
             {
-                index=int.Parse(text[i].ToString());
+                index = int.Parse(text[i].ToString());
                 result += checkKey[index];
             }
             return result;

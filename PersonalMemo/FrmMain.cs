@@ -27,9 +27,12 @@ namespace PersonalMemo
         {
             InitializeComponent();
         }
+        //待保存的memo, richtext内容变更时记录该richtext对应的memoid,当richtext所属tabpage被关闭时(系统退出时，定时保存时)自动保存richtext的内容,同时从列表中删除memoid
+        private List<string> SavePendingMemo = new List<string>();
 
         private void frmMain_Load(object sender, EventArgs e)
-        { 
+        {
+            EncryptUtil.Init();
             FrmLogin frmL = new FrmLogin();
             DialogResult result = frmL.ShowDialog();
             if (result != DialogResult.OK)
@@ -37,13 +40,15 @@ namespace PersonalMemo
                 this.Close();
             }
             else
-            { 
+            {
+               
                 InitTabControl();
                 InitLoadTagTabControl();
                 InitLoadTagMenuStrip();
                 InitFormText();
             }
         }
+       
         private void InitFormText() {
             this.lblWelcome.Text = string.Format("{0},欢迎您使用个人备忘录，它可以让你放心记录！", Session.currUser.name);
             this.Text = string.Format("个人备忘录-{0}", Session.currUser.name);
@@ -146,6 +151,7 @@ namespace PersonalMemo
                 bool isClose = x > myTabRect.X && x < myTabRect.Right && y > myTabRect.Y && y < myTabRect.Bottom;
                 if (isClose == true)
                 {
+                    SaveMemo(this.tabControlMain.SelectedTab);
                     this.tabControlMain.TabPages.Remove(this.tabControlMain.SelectedTab);
                 }
             }
@@ -184,11 +190,32 @@ namespace PersonalMemo
             txtBox.Parent = page;
             txtBox.Width = page.Width;
             txtBox.Height = page.Height;
-            txtBox.Text = memo.content;
+            txtBox.Text =EncryptUtil.DecryptDes(memo.content); 
             txtBox.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom | AnchorStyles.Left;
             txtBox.KeyDown += new KeyEventHandler(RickTextBox_KeyDown);
+            txtBox.TextChanged += new EventHandler(RTxtBoxTextChanged);
             tabControlMain.TabPages.Add(page);
             tabControlMain.SelectTab(page);
+        }
+        /// <summary>
+        /// richtextbox内容改变事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RTxtBoxTextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                TabPage page = (sender as RichTextBox).Parent as TabPage;
+                page.ForeColor = Color.Red;
+                if (!SavePendingMemo.Contains(page.Tag.ToString()))
+                    SavePendingMemo.Add(page.Tag.ToString());
+            }
+            catch (Exception)
+            { 
+                throw;
+            }
+            
         }
         #endregion
 
@@ -212,17 +239,23 @@ namespace PersonalMemo
         {
             SaveMemo();
         }
-        private void SaveMemo()
+        private void SaveMemo(TabPage page=null)
         {
-            TabPage page = tabControlMain.SelectedTab;
+            if (page==null)
+            {
+                page = tabControlMain.SelectedTab;
+            }
+             
             if (page != null)
             {
                 RichTextBox rtxtbox = page.Controls[0] as RichTextBox;
                 Memo memo = new Memo();
                 memo.tagid = page.Tag.ToString();
                 memo.lasttime = DateTime.Now;
-                memo.content = rtxtbox.Text.Trim();
+                memo.content =EncryptUtil.EncryptDes(rtxtbox.Text.Trim());
                 MemoDal.Modify(memo);
+                //从待保存memo列表中移除已保存memo
+                SavePendingMemo.Remove(page.Tag.ToString());
             }
             else
                 MessageBox.Show("请先新建或者选择一个备忘录", "提示");
@@ -286,6 +319,7 @@ namespace PersonalMemo
                             break;
                         }
                     }
+                    SavePendingMemo.Remove(page.Tag.ToString());
                     tabControlMain.TabPages.Remove(page);
 
                 }
@@ -349,6 +383,37 @@ namespace PersonalMemo
         {
             FrmAbout frmAbout = new FrmAbout();
             frmAbout.ShowDialog(this);
+        }
+        //窗体关闭前保存所有待保存memo
+        private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            foreach (TabPage page in tabControlMain.TabPages)
+            {
+                SaveMemo(page);
+            }
+        }
+        //定时保存 待保存memo
+        private void timerAutoSaveMemo_Tick(object sender, EventArgs e)
+        {
+            if (SavePendingMemo.Count>0)
+            {
+                string[] tempMmeoIds = SavePendingMemo.ToArray();
+                
+                SavePendingMemo.CopyTo(tempMmeoIds);
+                foreach (string memeoId in tempMmeoIds)
+                {
+                    foreach (TabPage page in tabControlMain.TabPages)
+                    {
+                        if (page.Tag.Equals(memeoId))
+                        {
+                            SaveMemo(page);
+                            SavePendingMemo.Remove(memeoId);
+                            break;
+                        }
+                        
+                    }
+                }
+            }
         }
     }
 }

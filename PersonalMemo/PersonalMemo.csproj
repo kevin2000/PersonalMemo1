@@ -82,6 +82,7 @@
     <Compile Include="common\StringUtil.cs" />
     <Compile Include="context\Session.cs" />
     <Compile Include="dal\BaseDal.cs" />
+    <Compile Include="dal\ConfigDal.cs" />
     <Compile Include="dal\DbHelper.cs" />
     <Compile Include="dal\MemoDal.cs" />
     <Compile Include="dal\TagDal.cs" />
@@ -123,6 +124,7 @@
       <DependentUpon>FrmTag.cs</DependentUpon>
     </Compile>
     <Compile Include="model\Memo.cs" />
+    <Compile Include="model\SysConfig.cs" />
     <Compile Include="model\SysUser.cs" />
     <Compile Include="model\Tag.cs" />
     <Compile Include="Program.cs" />
